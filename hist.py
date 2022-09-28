@@ -25,6 +25,8 @@ while True:
         if k not in data:
             data[k] = []
         data[k].extend(batch[k])
+    if not data:
+        continue
     nums = data.values()
     plt.cla()
     plt.hist(nums,30,stacked=True)

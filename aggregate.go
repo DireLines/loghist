@@ -16,7 +16,7 @@ func main() {
 	go func() {
 		for {
 			line, _ := reader.ReadString('\n')
-			trimmed := strings.TrimSpace(line)
+			trimmed := strings.Trim(line, "\n")
 			words := strings.Split(trimmed, " ")
 			if words[len(words)-1] == "micros" || words[len(words)-1] == "millis" {
 				key := strings.Join(words[:len(words)-3], " ")
@@ -31,8 +31,10 @@ func main() {
 
 	for {
 		time.Sleep(time.Millisecond * 500)
-		json, _ := json.Marshal(data)
-		fmt.Println(string(json))
-		data = map[string][]int{}
+		if len(data) > 0 {
+			json, _ := json.Marshal(data)
+			fmt.Println(string(json))
+			data = map[string][]int{}
+		}
 	}
 }

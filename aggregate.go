@@ -7,12 +7,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	data := map[string][]int{}
+	var dataLock sync.Mutex
 	go func() {
 		for {
 			line, _ := reader.ReadString('\n')
@@ -24,7 +26,9 @@ func main() {
 				if err != nil {
 					continue
 				}
+				dataLock.Lock()
 				data[key] = append(data[key], val)
+				dataLock.Unlock()
 			}
 		}
 	}()
@@ -32,9 +36,11 @@ func main() {
 	for {
 		time.Sleep(time.Millisecond * 100)
 		if len(data) > 0 {
+			dataLock.Lock()
 			json, _ := json.Marshal(data)
 			fmt.Println(string(json))
 			data = map[string][]int{}
+			dataLock.Unlock()
 		}
 	}
 }

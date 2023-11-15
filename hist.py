@@ -1,6 +1,7 @@
 import sys
 import json
 from matplotlib import pyplot as plt
+import time
 
 filters = sys.argv[1:]
 def filterDict(predicate,dictObj):
@@ -33,3 +34,5 @@ while True:
     plt.legend(data.keys())
     plt.draw()
     plt.pause(0.001)
+
+    

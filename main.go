@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-//a program that produces a stream of timing logs
+// a program that produces a stream of timing logs
 func main() {
 	for {
 		arr := []int{}
@@ -18,24 +18,24 @@ func main() {
 		}
 		logElapsedTime("initializing array")
 
-		sum := slow_arr_sum(arr)
+		sum := merge_serial(arr)
 		fmt.Println("sum:", sum)
-		logElapsedTime("slow_arr_sum")
+		logElapsedTime("merge_serial")
 
-		sum = fast_arr_sum(arr)
+		sum = merge_parallel(arr)
 		fmt.Println("sum:", sum)
-		logElapsedTime("fast_arr_sum")
+		logElapsedTime("merge_parallel")
 	}
 }
 
-//some slow merge operation on two array elements
+// some slow merge operation on two array elements
 func slow_combine(a int, b int) int {
-	wasteTime(1)
+	waste_time(1)
 	return a + b
 }
 
-//just a plain for loop
-func slow_arr_sum(arr []int) int {
+// just a plain for loop
+func merge_serial(arr []int) int {
 	sum := 0
 	for _, n := range arr {
 		sum = slow_combine(sum, n)
@@ -43,10 +43,10 @@ func slow_arr_sum(arr []int) int {
 	return sum
 }
 
-//using recursion to solve subproblems in parallel
-func fast_arr_sum(arr []int) int {
+// using recursion to solve subproblems in parallel
+func merge_parallel(arr []int) int {
 	if len(arr) < 100 {
-		return slow_arr_sum(arr)
+		return merge_serial(arr)
 	}
 	middle_index := len(arr) / 2
 	var wg sync.WaitGroup
@@ -55,15 +55,16 @@ func fast_arr_sum(arr []int) int {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		left = fast_arr_sum(arr[:middle_index])
+		left = merge_parallel(arr[:middle_index])
 	}()
 	go func() {
 		defer wg.Done()
-		right = fast_arr_sum(arr[middle_index:])
+		right = merge_parallel(arr[middle_index:])
 	}()
 	wg.Wait()
 	return slow_combine(left, right)
 }
+
 func elapsedTimeLogger(namespace string) func(string) {
 	start := time.Now().UnixMicro()
 	return func(msg string) {
@@ -73,7 +74,7 @@ func elapsedTimeLogger(namespace string) func(string) {
 	}
 }
 
-func wasteTime(micros int64) {
+func waste_time(micros int64) {
 	start := time.Now().UnixMicro()
 	//waste some time
 	for time.Now().UnixMicro()-start < micros {

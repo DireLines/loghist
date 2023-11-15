@@ -30,7 +30,7 @@ func main() {
 	}()
 
 	for {
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(time.Millisecond * 100)
 		if len(data) > 0 {
 			json, _ := json.Marshal(data)
 			fmt.Println(string(json))

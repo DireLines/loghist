@@ -43,7 +43,7 @@ func main() {
 	}()
 
 	for {
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Millisecond * 20)
 		if len(batch) > 0 {
 			batchLock.Lock()
 			if len(filters) > 0 {
@@ -107,6 +107,17 @@ const htmlPage = `
 <head>
     <title>Live Histogram</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background-color: #333;
+            color: #ccc;
+            font-family: Arial, sans-serif;
+        }
+        #plot {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
 </head>
 <body>
     <div id="plot"></div>
@@ -131,13 +142,16 @@ const htmlPage = `
                     var layout = {
                         barmode: 'stack',
                         bargap: 0.1,
-                        bargroupgap: 0.1
+                        bargroupgap: 0.1,
+                        paper_bgcolor: '#333',
+                        plot_bgcolor: '#333',
+                        font: { color: '#ccc' }
                     };
                     Plotly.newPlot('plot', traces, layout);
                 })
                 .catch(error => console.error('Error fetching data:', error));
         }
-        setInterval(fetchDataAndUpdatePlot, 1000);
+        setInterval(fetchDataAndUpdatePlot, 100);
         fetchDataAndUpdatePlot();
     </script>
 </body>

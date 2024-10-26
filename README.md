@@ -3,18 +3,20 @@ logs -> stdin -> live updating histograms
 
 Usage:
 
-`go run main.go | go run aggregate.go | python hist.py`
+`go run example/example.go | go run main.go`
 
-main.go is a stand in for any program you want to plot the timing logs of.
+`example/example.go` is a stand in for any program you want to plot the timing logs of.
+
+`main.go` will capture the log output of the program and serve a page charting it at localhost:8080
 
 You can add filters to the plotted histograms. 
 
 Try:
-`go run main.go | go run aggregate.go | python hist.py fast slow`
+`go run example/example.go | go run main.go fast slow`
 
 Would recommend aliasing for quick invocation:
 
 ```
-alias loghist="go run [absolute path to aggregate.go] | python [absolute path to hist.py]"
-go run main.go | loghist
+alias loghist="open http://localhost:8080 && go run [absolute path to main.go]"
+go run example/example.go | loghist
 ```

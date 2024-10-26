@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -11,10 +12,18 @@ import (
 	"time"
 )
 
+var globalData = make(map[string][]int)
+var globalDataLock sync.RWMutex
+var filters []string
+
 func main() {
+	filters = os.Args[1:]
+	// Start HTTP server in a goroutine
+	go startHTTPServer()
+
 	reader := bufio.NewReader(os.Stdin)
-	data := map[string][]int{}
-	var dataLock sync.Mutex
+	batch := map[string][]int{}
+	var batchLock sync.Mutex
 	go func() {
 		for {
 			line, _ := reader.ReadString('\n')
@@ -26,21 +35,111 @@ func main() {
 				if err != nil {
 					continue
 				}
-				dataLock.Lock()
-				data[key] = append(data[key], val)
-				dataLock.Unlock()
+				batchLock.Lock()
+				batch[key] = append(batch[key], val)
+				batchLock.Unlock()
 			}
 		}
 	}()
 
 	for {
 		time.Sleep(time.Millisecond * 100)
-		if len(data) > 0 {
-			dataLock.Lock()
-			json, _ := json.Marshal(data)
-			fmt.Println(string(json))
-			data = map[string][]int{}
-			dataLock.Unlock()
+		if len(batch) > 0 {
+			batchLock.Lock()
+			if len(filters) > 0 {
+				batch = filterDict(filtersContainKey, batch)
+			}
+			globalDataLock.Lock()
+			for k, v := range batch {
+				globalData[k] = append(globalData[k], v...)
+			}
+			globalDataLock.Unlock()
+			batch = map[string][]int{}
+			batchLock.Unlock()
 		}
 	}
 }
+
+func filterDict(predicate func(string, []int) bool, dictObj map[string][]int) map[string][]int {
+	result := make(map[string][]int)
+	for key, value := range dictObj {
+		if predicate(key, value) {
+			result[key] = value
+		}
+	}
+	return result
+}
+
+func filtersContainKey(key string, value []int) bool {
+	for _, filter := range filters {
+		if strings.Contains(key, filter) {
+			return true
+		}
+	}
+	return false
+}
+
+func startHTTPServer() {
+	http.HandleFunc("/", serveHTML)
+	http.HandleFunc("/data", serveData)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error starting HTTP server: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func serveHTML(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprintf(w, htmlPage)
+}
+
+func serveData(w http.ResponseWriter, r *http.Request) {
+	globalDataLock.RLock()
+	defer globalDataLock.RUnlock()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(globalData)
+}
+
+const htmlPage = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Histogram</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="plot"></div>
+    <script>
+        function fetchDataAndUpdatePlot() {
+            fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    var traces = [];
+                    var keys = Object.keys(data);
+                    for (var i = 0; i < keys.length; i++) {
+                        var key = keys[i];
+                        var values = data[key];
+                        var trace = {
+                            x: values,
+                            type: 'histogram',
+                            name: key,
+                            opacity: 0.75
+                        };
+                        traces.push(trace);
+                    }
+                    var layout = {
+                        barmode: 'stack',
+                        bargap: 0.1,
+                        bargroupgap: 0.1
+                    };
+                    Plotly.newPlot('plot', traces, layout);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+        setInterval(fetchDataAndUpdatePlot, 1000);
+        fetchDataAndUpdatePlot();
+    </script>
+</body>
+</html>
+`

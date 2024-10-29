@@ -158,23 +158,15 @@ const htmlPage = `
                         traces.push(trace);
                     }
                     var layout = {
-                          title: {text: 'distribution of timing logs by task'},
+                        title: {text: 'distribution of timing logs by task'},
                         barmode: 'stack',
                         bargap: 0.1,
                         bargroupgap: 0.1,
                         paper_bgcolor: '#333',
                         plot_bgcolor: '#333',
                         font: { color: '#ccc' },
-                        xaxis: {
-                            title: {
-                                text: 'execution time (micros)',
-                            }
-                        },
-                        yaxis: {
-                            title: {
-                                text: 'count of occurrences',
-                            }
-                        },
+                        xaxis: { title: { text: 'execution time (micros)' } },
+                        yaxis: { title: { text: 'count of occurrences' } },
                     };
                     Plotly.newPlot('plot', traces, layout);
                 })

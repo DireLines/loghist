@@ -15,19 +15,20 @@ Logs are expected on stdout and should follow the format `[any string describing
 Ex: `update: physics took 10.387667 millis`
 
 Current valid strings for time units:
-`nanos`
-`nanoseconds`
-`ns`
-`micros`
-`microseconds`
-`µs`
-`millis`
-`milliseconds`
-`ms`
-`seconds`
-`s`
-`sec`
-`secs`
+
+- `nanos`
+- `nanoseconds`
+- `ns`
+- `micros`
+- `microseconds`
+- `µs`
+- `millis`
+- `milliseconds`
+- `ms`
+- `seconds`
+- `s`
+- `sec`
+- `secs`
 
 `main.go` will capture the timing log output of the program and serve a page charting it as a stacked histogram at `localhost:8080`
 

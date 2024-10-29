@@ -6,6 +6,8 @@ Usage:
 
 `go run example/example.go | go run main.go`
 
+![example-plot](https://github.com/user-attachments/assets/b022e6af-ad0e-4813-af7b-b675e8778aaf)
+
 `example/example.go` is a stand in for any program you want to plot the timing logs of.
 
 Logs are expected on stdout and should follow the format `[any string describing a task] took [number] [time unit]`

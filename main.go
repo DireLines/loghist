@@ -12,9 +12,22 @@ import (
 	"time"
 )
 
-var globalData = make(map[string][]int)
+var globalData = make(map[string][]float64)
 var globalDataLock sync.RWMutex
 var filters []string
+
+var timeUnits map[string]float64 = map[string]float64{
+	"nanos":   1.0 / 1000.0,
+	"ns":      1.0 / 1000.0,
+	"micros":  1.0,
+	"µs":      1.0,
+	"millis":  1000,
+	"ms":      1000,
+	"seconds": 1000000,
+	"s":       1000000,
+	"sec":     1000000,
+	"secs":    1000000,
+}
 
 func main() {
 	filters = os.Args[1:]
@@ -22,21 +35,23 @@ func main() {
 	go startHTTPServer()
 
 	reader := bufio.NewReader(os.Stdin)
-	batch := map[string][]int{}
+	batch := map[string][]float64{}
 	var batchLock sync.Mutex
 	go func() {
 		for {
 			line, _ := reader.ReadString('\n')
 			trimmed := strings.Trim(line, "\n")
 			words := strings.Split(trimmed, " ")
-			if words[len(words)-1] == "micros" || words[len(words)-1] == "millis" || words[len(words)-1] == "ms" || words[len(words)-1] == "µs" {
+			timeUnit := words[len(words)-1]
+			timeUnitMultiplier, isValidUnit := timeUnits[timeUnit]
+			if isValidUnit {
 				key := strings.Join(words[:len(words)-3], " ")
-				val, err := strconv.Atoi(words[len(words)-2])
+				val, err := strconv.ParseFloat(words[len(words)-2], 64)
 				if err != nil {
 					continue
 				}
 				batchLock.Lock()
-				batch[key] = append(batch[key], val)
+				batch[key] = append(batch[key], val*timeUnitMultiplier)
 				batchLock.Unlock()
 			}
 		}
@@ -54,14 +69,14 @@ func main() {
 				globalData[k] = append(globalData[k], v...)
 			}
 			globalDataLock.Unlock()
-			batch = map[string][]int{}
+			batch = map[string][]float64{}
 			batchLock.Unlock()
 		}
 	}
 }
 
-func filterDict(predicate func(string, []int) bool, dictObj map[string][]int) map[string][]int {
-	result := make(map[string][]int)
+func filterDict(predicate func(string, []float64) bool, dictObj map[string][]float64) map[string][]float64 {
+	result := make(map[string][]float64)
 	for key, value := range dictObj {
 		if predicate(key, value) {
 			result[key] = value
@@ -70,7 +85,7 @@ func filterDict(predicate func(string, []int) bool, dictObj map[string][]int) ma
 	return result
 }
 
-func filtersContainKey(key string, value []int) bool {
+func filtersContainKey(key string, value []float64) bool {
 	for _, filter := range filters {
 		if strings.Contains(key, filter) {
 			return true
@@ -140,12 +155,23 @@ const htmlPage = `
                         traces.push(trace);
                     }
                     var layout = {
+                          title: {text: 'distribution of timing logs by task'},
                         barmode: 'stack',
                         bargap: 0.1,
                         bargroupgap: 0.1,
                         paper_bgcolor: '#333',
                         plot_bgcolor: '#333',
-                        font: { color: '#ccc' }
+                        font: { color: '#ccc' },
+                        xaxis: {
+                            title: {
+                                text: 'execution time (micros)',
+                            }
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'count of occurrences',
+                            }
+                        },
                     };
                     Plotly.newPlot('plot', traces, layout);
                 })

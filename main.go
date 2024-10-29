@@ -17,16 +17,19 @@ var globalDataLock sync.RWMutex
 var filters []string
 
 var timeUnits map[string]float64 = map[string]float64{
-	"nanos":   1.0 / 1000.0,
-	"ns":      1.0 / 1000.0,
-	"micros":  1.0,
-	"µs":      1.0,
-	"millis":  1000,
-	"ms":      1000,
-	"seconds": 1000000,
-	"s":       1000000,
-	"sec":     1000000,
-	"secs":    1000000,
+	"nanos":        1.0 / 1000.0,
+	"nanoseconds":  1.0 / 1000.0,
+	"ns":           1.0 / 1000.0,
+	"micros":       1.0,
+	"microseconds": 1.0,
+	"µs":           1.0,
+	"millis":       1000,
+	"milliseconds": 1000,
+	"ms":           1000,
+	"seconds":      1000000,
+	"s":            1000000,
+	"sec":          1000000,
+	"secs":         1000000,
 }
 
 func main() {

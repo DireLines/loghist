@@ -29,7 +29,7 @@ Current valid strings for time units:
 
 `main.go` will capture the timing log output of the program and serve a page charting it as a stacked histogram at `localhost:8080`
 
-Any command line args to `main.go` will be interpreted as filters on the resulting histogram. If supplied, only task names matching at least one filter will be shown.
+Any command line args to `main.go` will be interpreted as filters on the resulting histogram. If supplied, only task names containing at least one filter as a substring will be shown.
 
 Ex:
-`go run example/example.go | go run main.go fast slow`
+`go run example/example.go | go run main.go serial parallel`

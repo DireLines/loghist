@@ -1,4 +1,4 @@
-package example
+package main
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // a program that produces a stream of timing logs
-func example() {
+func main() {
 	for {
 		arr := []int{}
 		arr_size := 10000

@@ -34,8 +34,12 @@ var timeUnits map[string]float64 = map[string]float64{
 
 func main() {
 	filters = os.Args[1:]
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	// Start HTTP server in a goroutine
-	go startHTTPServer()
+	go startHTTPServer(port)
 
 	reader := bufio.NewReader(os.Stdin)
 	batch := map[string][]float64{}
@@ -97,10 +101,10 @@ func filtersContainKey(key string, value []float64) bool {
 	return false
 }
 
-func startHTTPServer() {
+func startHTTPServer(port string) {
 	http.HandleFunc("/", serveHTML)
 	http.HandleFunc("/data", serveData)
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error starting HTTP server: %v\n", err)
 		os.Exit(1)
@@ -167,6 +171,7 @@ const htmlPage = `
                         font: { color: '#ccc' },
                         xaxis: { title: { text: 'execution time (micros)' } },
                         yaxis: { title: { text: 'count of occurrences' } },
+						showlegend: true,
                     };
                     Plotly.newPlot('plot', traces, layout);
                 })

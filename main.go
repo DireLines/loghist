@@ -172,6 +172,7 @@ const htmlPage = `
                         xaxis: { title: { text: 'execution time (micros)' } },
                         yaxis: { title: { text: 'count of occurrences' } },
 						showlegend: true,
+						hoverlabel:{namelength:-1},
                     };
                     Plotly.newPlot('plot', traces, layout);
                 })

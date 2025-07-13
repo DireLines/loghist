@@ -113,7 +113,7 @@ func startHTTPServer(port string) {
 
 func serveHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, htmlPage)
+	fmt.Fprint(w, htmlPage)
 }
 
 func serveData(w http.ResponseWriter, r *http.Request) {
@@ -168,7 +168,7 @@ const htmlPage = `
                         bargroupgap: 0.1,
                         paper_bgcolor: '#333',
                         plot_bgcolor: '#333',
-                        font: { color: '#ccc' },
+                        font: { color: '#ccc' , size: 24},
                         xaxis: { title: { text: 'execution time (micros)' } },
                         yaxis: { title: { text: 'count of occurrences' } },
 						showlegend: true,
